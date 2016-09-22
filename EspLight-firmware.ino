@@ -1,5 +1,6 @@
 /*
   Author: Duality / Robert
+  Contributer: shbatm / Tim
 
   This is Firmware for controlling ledstrips with a esp8266.
   It includes a way of setting which strip is connected, (webinterface)
@@ -15,7 +16,7 @@
 #include <EEPROM.h>
 #include <Ticker.h>
 
-#include <otaupload.h>
+#include "otaupload.h"
 
 #include "stripcontrol.h"
 #include "html.h"
