@@ -8,7 +8,7 @@
 #include "ws2812.h"
 
 // request.
-// http://10.42.4.139/stripcontrol?pin=1234&effect=0&brightness=128&var0=128&var1=64&var2=42
+// http://10.42.4.139/stripcontrol?pin=1234&effect=0&brightness=128&var0=128&var1=64&var2=42&speed=255
 
 #define RGBCOLORS 0
 #define FADING 1
@@ -32,6 +32,7 @@ typedef struct {
   int varZero;
   int varOne;
   int varTwo;
+  int speed;
   int changed;
 } stripcontrol_t;
 

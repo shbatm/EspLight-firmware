@@ -59,6 +59,7 @@ stripcontrol_t stripcontrol = {
   .varZero = 0,
   .varOne = 0,
   .varTwo = 0,
+  .speed = 50,      // set default speed to 50/255 or 20%
   .changed = false
 };
 

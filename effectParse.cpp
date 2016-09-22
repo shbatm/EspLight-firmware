@@ -3,7 +3,7 @@
 WiFiUDP effectListener;
 String effectVariables[6][2];
 
-// ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236
+// ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236&speed=255
 // String effectVariables[6][2];
 
 void setupEffectParse(int port)
@@ -68,6 +68,14 @@ void applyEffectData()
     stripcontrol.varZero = effectArg("var0").toInt();
     stripcontrol.varOne = effectArg("var1").toInt();
     stripcontrol.varTwo = effectArg("var2").toInt();
+    if(effectArg("speed") == String(""))  // Temporary construct until app is updated to send speed
+    {
+      stripcontrol.speed = 50; // DEFAULT SPEED
+    }
+    else 
+    {
+      stripcontrol.speed = effectArg("speed").toInt();
+    }
     stripcontrol.changed = true;
   }
   debugPrintStripControl();
