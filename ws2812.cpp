@@ -3,7 +3,7 @@
 // holds the length of the ledstrip in pixels or chips.
 static int ws2812_striplen;
 // create a pointer of NeoPixelBus object type.
-NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> *strip = NULL;
+NeoPixelBus *strip = NULL;
 
 // timing vairiables.
 static unsigned long ccurrent = 0;
@@ -20,12 +20,12 @@ void setupWS2812(uint16_t length, uint8_t pin)
     colors = colorinc();
     if(strip == NULL)
     {
-        strip = new NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>(length, pin);
+        strip = new NeoPixelBus(length, pin);
     }
     else
     {
         delete strip;
-        strip = new NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>(length, pin);
+        strip = new NeoPixelBus(length, pin);
     }
     strip->Begin();
     setWS2812Strip(0, 0, 0);
