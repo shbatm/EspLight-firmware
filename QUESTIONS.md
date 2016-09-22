@@ -1,4 +1,4 @@
-"Questions for Duality4Y
+#Questions for Duality4Y
 
 __Background:__ Working on a project based on Duality4Y's ESPLight project for some lighting around my house. This document includes some of the issue's I've found.  I'm building this list to at some point show Duality4Y what I'm doing and ask for any information I'm missing.
 
@@ -6,7 +6,7 @@ __Background:__ Working on a project based on Duality4Y's ESPLight project for s
 1. <otaupload.h> - What library is this from? Cannot find it. Had to comment out lines referencing otaupload.h, setupOta, and handleSketchUpdate
 	Found in Duality4Y's personal GitHub repo. Now included locally in this repo. 
 		
-2. NeoPixelBus V2 is failing during build: "error: invalid use of template-name 'NeoPixelBus' without an argument list". 
+2. NeoPixelBus V2 is failing during build: `"error: invalid use of template-name 'NeoPixelBus' without an argument list"`. 
 	Looking at the documentation of the NeoPixelBus site, you need to declare the method to use. For example: `NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(16, 2);`
 	For the Esp8266 platforms, just omit the pin argument. This is due to hardware support that doesn't allow for selecting a pin...The NeoEsp8266Dma800KbpsMethod is the underlying method that gets used if you use Neo800KbpsMethod on Esp8266 platforms. There should be no need to use it directly.
 
