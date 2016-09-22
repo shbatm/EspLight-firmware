@@ -9,6 +9,7 @@ This fork is to make some minor updates and tweaks to Duality4Y's original ESPLi
 * Fix speed control: currently appears speed control is based only on the "Red"/"Var0" parameter.
 * Add "chaser" mode (aka Knightrider/KITT)
 * Default to last state on power loss/restore : instead of just defaulting to off and requiring someone to connect with the app to turn the lights on, this will allow for a more standalone installation where the app is only required to change the mode.
+* Upgrade WS2812 functions to the NeoPixelBus animations
 
 
 ##Known Issues:
