@@ -18,3 +18,5 @@ __Background:__ Working on a project based on Duality4Y's ESPLight project for s
 	This method uses only the CPU to send data to the NeoPixels. But due to WiFi interrupts it is not stable when used with WiFi features of the Esp8266.
 
 3. Need to confim if there are any special build commands. Away from my workshop so I don't have any spare boards to test with right now.
+
+4. Why is speed control passed as the RED parameter? i.e. Speed is the Var0 parameter which is the same as the red value as opposed to its own value.
