@@ -32,9 +32,6 @@
 #define SERVERTEST          false
 #define ENABLEOTA           false
 
-// Note: Speed is millisecond interval between changes; higher=slower
-#define DEFAULTSPEED        50
-
 // enable all Serial printing.
 #define SERIALDEBUGPRINTING true
 // sets Serial.setDebugOutput()
@@ -63,7 +60,6 @@ stripcontrol_t stripcontrol = {
   .varZero = 0,
   .varOne = 0,
   .varTwo = 0,
-  .speed = DEFAULTSPEED,
   .changed = false
 };
 
@@ -231,7 +227,6 @@ void settingsStore()
   stripcontrol.varZero,
   stripcontrol.varOne,
   stripcontrol.varTwo,
-  stripcontrol.speed, 
   */
   int eeAddr = 0;
   Serial.println("storing: ");
@@ -272,9 +267,6 @@ void settingsStore()
   Serial.println("stripcontrol.varTwo: ");
   Serial.println(stripcontrol.varTwo)
   storeInt(stripcontrol.varTwo, eeAddr);
-  Serial.println("stripcontrol.speed: ");
-  Serial.println(stripcontrol.speed)
-  storeInt(stripcontrol.speed, eeAddr);
   // END UPDATE
   EEPROM.commit();
 }
@@ -302,7 +294,6 @@ void settingsLoad()
     stripcontrol.varZero = loadInt(eeAddr);
     stripcontrol.varOne = loadInt(eeAddr);
     stripcontrol.varTwo = loadInt(eeAddr);
-    stripcontrol.speed = loadInt(eeAddr);
   }
   else if(!isValid)
   {

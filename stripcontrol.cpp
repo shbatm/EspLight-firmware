@@ -35,7 +35,7 @@ void handleStrips()
     int r = ((double)stripcontrol.varZero)*brightfact;
     int g = ((double)stripcontrol.varOne)*brightfact;
     int b = ((double)stripcontrol.varTwo)*brightfact;
-    int speed = stripcontrol.speed+1;
+    int speed = stripcontrol.varZero+1;
     if(stripcontrol.effect == RGBCOLORS)
     {
         if(stripselect == ANALOGSTRIP)
@@ -101,7 +101,6 @@ void debugPrintStripControl()
         "var0:        %d\n"
         "var1:        %d\n"
         "var2:        %d\n"
-        "speed:       %d\n"
         "changed:     %d\n",
         stripcontrol.pincode,
         stripcontrol.effect,
@@ -109,7 +108,6 @@ void debugPrintStripControl()
         stripcontrol.varZero,
         stripcontrol.varOne,
         stripcontrol.varTwo,
-        stripcontrol.speed,
         stripcontrol.changed
         );
     Serial.println(fmtstr);

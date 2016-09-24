@@ -1,12 +1,12 @@
 #include "effectParse.h"
 
-#define NUM_PARAM 8
+#define NUM_PARAM 7
 
 WiFiUDP effectListener;
 String effectVariables[NUM_PARAM][2];
 
-// ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236[&speed=255][&savesetting=1]
-// String effectVariables[8][2];
+// ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236[&savesetting=1]
+// String effectVariables[7][2];
 
 void setupEffectParse(int port)
 {
@@ -77,9 +77,9 @@ void applyEffectData()
     // to skip unused parameters but it looks like it will work. The last two
     // parameters in `effectVariables` should just be empty strings if nothing
     // is passed in the URL.  This is needed because (a) the app is not
-    // configured to send speed param yet, and you may not want to save every
+    // configured to send save param yet, and you may not want to save every
     // time you send a URL.
-    // If `speed` and `savesetting` work, expose the rest of the contruct and 
+    // If `savesetting` works, expose the rest of the contruct and 
     // comment out the 5 lines above to enable only partial URLs to be sent.
     //
     // if(effectArg("effect") != String(""))  
@@ -102,10 +102,6 @@ void applyEffectData()
     // {
     //   stripcontrol.var2 = effectArg("var2").toInt();
     // }
-    if(effectArg("speed") != String(""))  
-    {
-      stripcontrol.speed = effectArg("speed").toInt();
-    }
     // If savesetting flag is passed, write the settings to EEPROM
     if(effectArg("savesetting") != String(""))  
     {
