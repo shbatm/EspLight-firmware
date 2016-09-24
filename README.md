@@ -4,11 +4,12 @@ This fork is to make some minor updates and tweaks to Duality4Y's original ESPLi
 ##Changes include:
 * Tweaked PCB to add mounting holes and move the VCC to 3.3VDC on-board power supply to an off-board Buck Converter to save component costs.  WRT the buck converter: since I only plan to build a few of these, it's cheaper for me to buy some $2.50 DC to DC buck converter from [here](http://www.gearbest.com/development-boards/pp_51010.html) than to buy the eqivalent in parts+shipping from Digikey/Mouser.  The new board uses a 3-pin header (VCC/3.3V/GND) to connect to the buck board with jumper wires.
 * Update software to use NeoPixelBus V2: NeoPixelBus seems to have updated its method statements in the new version and the old EspLight-firmware won't compile
+* Fixed speed control: in old method speed control is based only on the "Red"/"Var0" parameter. New method it is an independent parameter (still need to update the app)
+* Added ability to save state for power up using the `savesettings=1` parameter in the API. To reset to black, send a black command with `&savesettings=1` appended to the end.  Instead of just defaulting to off and requiring someone to connect with the app to turn the lights on, this will allow for a more standalone installation where the app is only required to change the mode.
 
 ##To-do:
-* Fix speed control: currently appears speed control is based only on the "Red"/"Var0" parameter.
+* Update the APP to send speed parameters.
 * Add "chaser" mode (aka Knightrider/KITT)
-* Default to last state on power loss/restore : instead of just defaulting to off and requiring someone to connect with the app to turn the lights on, this will allow for a more standalone installation where the app is only required to change the mode.
 * Upgrade WS2812 functions to the NeoPixelBus animations
 
 

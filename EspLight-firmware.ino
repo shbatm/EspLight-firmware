@@ -31,6 +31,10 @@
 #define EEPROMSIZE          1024
 #define SERVERTEST          false
 #define ENABLEOTA           false
+
+// Note: Speed is millisecond interval between changes; higher=slower
+#define DEFAULTSPEED        50
+
 // enable all Serial printing.
 #define SERIALDEBUGPRINTING true
 // sets Serial.setDebugOutput()
@@ -59,7 +63,7 @@ stripcontrol_t stripcontrol = {
   .varZero = 0,
   .varOne = 0,
   .varTwo = 0,
-  .speed = 50,      // set default speed to 50/255 or 20%
+  .speed = DEFAULTSPEED,
   .changed = false
 };
 
@@ -221,7 +225,13 @@ void settingsStore()
   sta pass,
   accesPin,
   stripselect,
-  currentMode
+  striplen,
+  stripcontrol.effect,
+  stripcontrol.brightness,
+  stripcontrol.varZero,
+  stripcontrol.varOne,
+  stripcontrol.varTwo,
+  stripcontrol.speed, 
   */
   int eeAddr = 0;
   Serial.println("storing: ");
@@ -246,6 +256,26 @@ void settingsStore()
   storeInt(striplen, eeAddr);
   Serial.println("striplen: ");
   Serial.println(striplen);
+  // UDPATE: Store LED state for use on restart
+  Serial.println("stripcontrol.effect: ");
+  Serial.println(stripcontrol.effect)
+  storeInt(stripcontrol.effect, eeAddr);
+  Serial.println("stripcontrol.brightness: ");
+  Serial.println(stripcontrol.brightness)
+  storeInt(stripcontrol.brightness, eeAddr);
+  Serial.println("stripcontrol.varZero: ");
+  Serial.println(stripcontrol.varZero)
+  storeInt(stripcontrol.varZero, eeAddr);
+  Serial.println("stripcontrol.varOne: ");
+  Serial.println(stripcontrol.varOne)
+  storeInt(stripcontrol.varOne, eeAddr);
+  Serial.println("stripcontrol.varTwo: ");
+  Serial.println(stripcontrol.varTwo)
+  storeInt(stripcontrol.varTwo, eeAddr);
+  Serial.println("stripcontrol.speed: ");
+  Serial.println(stripcontrol.speed)
+  storeInt(stripcontrol.speed, eeAddr);
+  // END UPDATE
   EEPROM.commit();
 }
 
@@ -267,6 +297,12 @@ void settingsLoad()
     accessPin = loadInt(eeAddr);
     stripselect = loadInt(eeAddr);
     striplen = loadInt(eeAddr);
+    stripcontrol.effect = loadInt(eeAddr);
+    stripcontrol.brightness = loadInt(eeAddr);
+    stripcontrol.varZero = loadInt(eeAddr);
+    stripcontrol.varOne = loadInt(eeAddr);
+    stripcontrol.varTwo = loadInt(eeAddr);
+    stripcontrol.speed = loadInt(eeAddr);
   }
   else if(!isValid)
   {
@@ -459,6 +495,12 @@ void loop() {
     handleStrips();
     // handle control over effects.
     handleEffectUpdate();
+    // handle request to save settings
+    if(stripcontrol.changed)
+    {
+      settingsStore();
+      stripcontrol.changed = false;
+    }
     // handle switching to AP_MODE
     wifiModeHandling();
   }
