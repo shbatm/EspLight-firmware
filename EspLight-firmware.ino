@@ -253,19 +253,19 @@ void settingsStore()
   Serial.println(striplen);
   // UDPATE: Store LED state for use on restart
   Serial.println("stripcontrol.effect: ");
-  Serial.println(stripcontrol.effect)
+  Serial.println(stripcontrol.effect);
   storeInt(stripcontrol.effect, eeAddr);
   Serial.println("stripcontrol.brightness: ");
-  Serial.println(stripcontrol.brightness)
+  Serial.println(stripcontrol.brightness);
   storeInt(stripcontrol.brightness, eeAddr);
   Serial.println("stripcontrol.varZero: ");
-  Serial.println(stripcontrol.varZero)
+  Serial.println(stripcontrol.varZero);
   storeInt(stripcontrol.varZero, eeAddr);
   Serial.println("stripcontrol.varOne: ");
-  Serial.println(stripcontrol.varOne)
+  Serial.println(stripcontrol.varOne);
   storeInt(stripcontrol.varOne, eeAddr);
   Serial.println("stripcontrol.varTwo: ");
-  Serial.println(stripcontrol.varTwo)
+  Serial.println(stripcontrol.varTwo);
   storeInt(stripcontrol.varTwo, eeAddr);
   // END UPDATE
   EEPROM.commit();
