@@ -1,5 +1,6 @@
 /*
   Author: Duality / Robert
+  Contributer: shbatm / Tim
 
   This is Firmware for controlling ledstrips with a esp8266.
   It includes a way of setting which strip is connected, (webinterface)
@@ -15,7 +16,7 @@
 #include <EEPROM.h>
 #include <Ticker.h>
 
-#include <otaupload.h>
+#include "otaupload.h"
 
 #include "stripcontrol.h"
 #include "html.h"
@@ -30,6 +31,7 @@
 #define EEPROMSIZE          1024
 #define SERVERTEST          false
 #define ENABLEOTA           false
+
 // enable all Serial printing.
 #define SERIALDEBUGPRINTING true
 // sets Serial.setDebugOutput()
@@ -219,7 +221,12 @@ void settingsStore()
   sta pass,
   accesPin,
   stripselect,
-  currentMode
+  striplen,
+  stripcontrol.effect,
+  stripcontrol.brightness,
+  stripcontrol.varZero,
+  stripcontrol.varOne,
+  stripcontrol.varTwo,
   */
   int eeAddr = 0;
   Serial.println("storing: ");
@@ -244,6 +251,23 @@ void settingsStore()
   storeInt(striplen, eeAddr);
   Serial.println("striplen: ");
   Serial.println(striplen);
+  // UDPATE: Store LED state for use on restart
+  Serial.println("stripcontrol.effect: ");
+  Serial.println(stripcontrol.effect);
+  storeInt(stripcontrol.effect, eeAddr);
+  Serial.println("stripcontrol.brightness: ");
+  Serial.println(stripcontrol.brightness);
+  storeInt(stripcontrol.brightness, eeAddr);
+  Serial.println("stripcontrol.varZero: ");
+  Serial.println(stripcontrol.varZero);
+  storeInt(stripcontrol.varZero, eeAddr);
+  Serial.println("stripcontrol.varOne: ");
+  Serial.println(stripcontrol.varOne);
+  storeInt(stripcontrol.varOne, eeAddr);
+  Serial.println("stripcontrol.varTwo: ");
+  Serial.println(stripcontrol.varTwo);
+  storeInt(stripcontrol.varTwo, eeAddr);
+  // END UPDATE
   EEPROM.commit();
 }
 
@@ -265,6 +289,11 @@ void settingsLoad()
     accessPin = loadInt(eeAddr);
     stripselect = loadInt(eeAddr);
     striplen = loadInt(eeAddr);
+    stripcontrol.effect = loadInt(eeAddr);
+    stripcontrol.brightness = loadInt(eeAddr);
+    stripcontrol.varZero = loadInt(eeAddr);
+    stripcontrol.varOne = loadInt(eeAddr);
+    stripcontrol.varTwo = loadInt(eeAddr);
   }
   else if(!isValid)
   {
@@ -457,6 +486,13 @@ void loop() {
     handleStrips();
     // handle control over effects.
     handleEffectUpdate();
+    // handle request to save settings
+    if(stripcontrol.changed == true)
+    {
+      Serial.println("Settings Save requested, storing settings");
+      settingsStore();
+      stripcontrol.changed = false;
+    }
     // handle switching to AP_MODE
     wifiModeHandling();
   }

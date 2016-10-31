@@ -1,10 +1,12 @@
 #include "effectParse.h"
 
-WiFiUDP effectListener;
-String effectVariables[6][2];
+#define NUM_PARAM 7
 
-// ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236
-// String effectVariables[6][2];
+WiFiUDP effectListener;
+String effectVariables[NUM_PARAM][2];
+
+// ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236[&savesetting=1]
+// String effectVariables[7][2];
 
 void setupEffectParse(int port)
 {
@@ -37,7 +39,7 @@ String getAlphaNumString(String &data)
 
 String effectArg(const char *par)
 {
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < NUM_PARAM; i++)
   {
     if(effectVariables[i][0] == String(par))
     {
@@ -68,7 +70,46 @@ void applyEffectData()
     stripcontrol.varZero = effectArg("var0").toInt();
     stripcontrol.varOne = effectArg("var1").toInt();
     stripcontrol.varTwo = effectArg("var2").toInt();
-    stripcontrol.changed = true;
+    // stripcontrol.changed = true; # Re-used as flag to store new colors
+    
+    // WARNING: The following needs to be tested to see what happens if only
+    // the original 6 parameters are sent. May need to do some error checking
+    // to skip unused parameters but it looks like it will work. The last two
+    // parameters in `effectVariables` should just be empty strings if nothing
+    // is passed in the URL.  This is needed because (a) the app is not
+    // configured to send save param yet, and you may not want to save every
+    // time you send a URL.
+    // If `savesetting` works, expose the rest of the contruct and 
+    // comment out the 5 lines above to enable only partial URLs to be sent.
+    //
+    // if(effectArg("effect") != String(""))  
+    // {
+    //   stripcontrol.effect = effectArg("effect").toInt();
+    // }
+    // if(effectArg("brightness") != String(""))  
+    // {
+    //   stripcontrol.brightness = effectArg("brightness").toInt();
+    // }
+    // if(effectArg("var0") != String(""))  
+    // {
+    //   stripcontrol.var0 = effectArg("var0").toInt();
+    // }
+    // if(effectArg("var1") != String(""))  
+    // {
+    //   stripcontrol.var1 = effectArg("var1").toInt();
+    // }
+    // if(effectArg("var2") != String(""))  
+    // {
+    //   stripcontrol.var2 = effectArg("var2").toInt();
+    // }
+    // If savesetting flag is passed, write the settings to EEPROM
+    if(effectArg("savesetting") != String(""))  
+    {
+      if(effectArg("savesetting").toInt() == 1)
+      {
+        stripcontrol.changed = true;
+      }
+    }
   }
   debugPrintStripControl();
 }
@@ -76,7 +117,7 @@ void applyEffectData()
 void parseEffectPacket(String data)
 {
   /* clear current settings. */
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < NUM_PARAM; i++)
   {
     String parameter = "";
     String argument = "";
@@ -84,7 +125,7 @@ void parseEffectPacket(String data)
     effectVariables[i][1] = argument;
   }
   /* apply received settings. */
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < NUM_PARAM; i++)
   {
     String parameter = getAlphaNumString(data);
     String argument = getAlphaNumString(data);

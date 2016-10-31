@@ -37,7 +37,7 @@ void fadeRgb(int speed, int brightness)
         cprevious = ccurrent;
         colors = colorinc();
     }
-    cinterval = stripcontrol.varZero+1;
+    cinterval = speed+1;
     float brightnessFactor = (float)(((float)stripcontrol.brightness)/100);
     int r = colors[RED] * brightnessFactor;
     int g = colors[GREEN] * brightnessFactor;
