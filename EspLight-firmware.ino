@@ -487,8 +487,9 @@ void loop() {
     // handle control over effects.
     handleEffectUpdate();
     // handle request to save settings
-    if(stripcontrol.changed)
+    if(stripcontrol.changed == true)
     {
+      Serial.println("Settings Save requested, storing settings");
       settingsStore();
       stripcontrol.changed = false;
     }
