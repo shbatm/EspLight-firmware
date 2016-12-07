@@ -4,8 +4,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-
-static WiFiUDP OTA;
+#include <ArduinoOTA.h>
 
 #define OTAPORT         48266
 

@@ -30,7 +30,7 @@
 #define WEBSERVERPORT       80
 #define EEPROMSIZE          1024
 #define SERVERTEST          false
-#define ENABLEOTA           false
+#define ENABLEOTA           true
 
 // enable all Serial printing.
 #define SERIALDEBUGPRINTING true
