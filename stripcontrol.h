@@ -13,6 +13,8 @@
 #define RGBCOLORS 0
 #define FADING 1
 #define DIGITALFADING 2
+#define CYLONEYE 3
+#define TAILLOOP 4
 
 #define WS2801 0
 #define WS2812 1

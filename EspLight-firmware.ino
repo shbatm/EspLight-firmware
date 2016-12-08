@@ -294,6 +294,7 @@ void settingsLoad()
     stripcontrol.varZero = loadInt(eeAddr);
     stripcontrol.varOne = loadInt(eeAddr);
     stripcontrol.varTwo = loadInt(eeAddr);
+    stripcontrol.changed = true;
   }
   else if(!isValid)
   {
@@ -487,11 +488,11 @@ void loop() {
     // handle control over effects.
     handleEffectUpdate();
     // handle request to save settings
-    if(stripcontrol.changed == true)
+    if(stripcontrol.changed == 2)
     {
       Serial.println("Settings Save requested, storing settings");
       settingsStore();
-      stripcontrol.changed = false;
+      stripcontrol.changed = 1; // Still need to update on next loop
     }
     // handle switching to AP_MODE
     wifiModeHandling();

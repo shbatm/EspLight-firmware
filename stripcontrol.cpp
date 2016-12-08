@@ -88,6 +88,38 @@ void handleStrips()
             updateWS2801();
         }
     }
+    else if(stripcontrol.effect == CYLONEYE)
+    {
+        if(stripselect == WS2812)
+        {
+            if (stripcontrol.changed)
+            {
+                cylonWS2812(speed, stripcontrol.varTwo); // Only needs to be called the first time after a change
+            }
+            updateWS2812();
+        }
+        else if(stripselect == WS2801)
+        {
+            // TODO: Insert Function Calls for WS2801 Cylon Eye Effect
+        }
+    }
+    else if(stripcontrol.effect == TAILLOOP)
+    {
+        if(stripselect == WS2812)
+        {
+            if (stripcontrol.changed)
+            {
+                float tailcolors[5] = {(float)stripcontrol.varTwo, -1.0f, -1.0f, -1.0f, -1.0f};
+                tailLoopWS2812(speed, stripcontrol.varOne, false, tailcolors); // Only needs to be called the first time after a change
+            }
+            updateWS2812();
+        }
+        else if(stripselect == WS2801)
+        {
+            // TODO: Insert Function Calls for WS2801 Cylon Eye Effect
+        }
+    }
+    stripcontrol.changed = false;
 }
 
 void debugPrintStripControl()

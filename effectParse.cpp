@@ -72,13 +72,6 @@ void applyEffectData()
     stripcontrol.varTwo = effectArg("var2").toInt();
     // stripcontrol.changed = true; # Re-used as flag to store new colors
     
-    // WARNING: The following needs to be tested to see what happens if only
-    // the original 6 parameters are sent. May need to do some error checking
-    // to skip unused parameters but it looks like it will work. The last two
-    // parameters in `effectVariables` should just be empty strings if nothing
-    // is passed in the URL.  This is needed because (a) the app is not
-    // configured to send save param yet, and you may not want to save every
-    // time you send a URL.
     // If `savesetting` works, expose the rest of the contruct and 
     // comment out the 5 lines above to enable only partial URLs to be sent.
     //
@@ -92,24 +85,25 @@ void applyEffectData()
     // }
     // if(effectArg("var0") != String(""))  
     // {
-    //   stripcontrol.var0 = effectArg("var0").toInt();
+    //   stripcontrol.varZero = effectArg("var0").toInt();
     // }
     // if(effectArg("var1") != String(""))  
     // {
-    //   stripcontrol.var1 = effectArg("var1").toInt();
+    //   stripcontrol.varOne = effectArg("var1").toInt();
     // }
     // if(effectArg("var2") != String(""))  
     // {
-    //   stripcontrol.var2 = effectArg("var2").toInt();
+    //   stripcontrol.varTwo = effectArg("var2").toInt();
     // }
     // If savesetting flag is passed, write the settings to EEPROM
     if(effectArg("savesetting") != String(""))  
     {
       if(effectArg("savesetting").toInt() == 1)
       {
-        stripcontrol.changed = true;
+        stripcontrol.changed = 2;
       }
     }
+    if (stripcontrol.changed != 2) { stripcontrol.changed = 1; }
   }
   debugPrintStripControl();
 }
