@@ -60,6 +60,7 @@ stripcontrol_t stripcontrol = {
   .varZero = 0,
   .varOne = 0,
   .varTwo = 0,
+  .varWheel = {-2.0f,-2.0f,-2.0f,-2.0f,-2.0f},
   .changed = false
 };
 
@@ -165,6 +166,16 @@ void storeInt(int value, int& addr)
   addr += i;
 }
 
+void storeFloat(float value, int& addr)
+{
+  byte* p = (byte*)(void*)&value;
+  for (int i = 0; i < sizeof(value); i++)
+  {
+       EEPROM.write(addr++, *p++);
+       delay(0);
+  }
+}
+
 String loadString(int &addr)
 {
   String text = "";
@@ -212,6 +223,18 @@ int loadInt(int &addr)
   return value;
 }
 
+float loadFloat(int &addr)
+{
+  double value = 0.0f;
+  byte* p = (byte*)(void*)&value;
+  for (int i = 0; i < sizeof(value); i++)
+    *p++ = EEPROM.read(addr++);
+
+  // Error check: make sure it's a valid float, return 0.0 if not
+  value = (value != value) ? 0.0f : value;
+  return value;
+}
+
 void settingsStore()
 {
   /*
@@ -229,44 +252,55 @@ void settingsStore()
   stripcontrol.varTwo,
   */
   int eeAddr = 0;
-  Serial.println("storing: ");
+  Serial.print("Storing: ");
+
   storeString(magicEepromWord, eeAddr);
-  Serial.println("magic word:");
+  Serial.print("magic word: ");
   Serial.println(magicEepromWord);
+
   storeString(board_name, eeAddr);
-  Serial.println("board name:");
+  Serial.print("board name: ");
   Serial.println(board_name);
+
   storeString(sta_ssid, eeAddr);
-  Serial.println("ssid: ");
+  Serial.print("ssid: ");
   Serial.println(sta_ssid);
+  
   storeString(sta_pass, eeAddr);
-  Serial.println("pass: ");
+  Serial.print("pass: ");
   Serial.println(sta_pass);
+  
   storeInt(accessPin, eeAddr);
-  Serial.println("accesspin");
-  Serial.println(accessPin);
+  Serial.printf("accesspin: %d\n", accessPin);
+  
   storeInt(stripselect, eeAddr);
-  Serial.println("strip select: ");
-  Serial.println(stripselect);
+  Serial.printf("strip select: %d\n", stripselect);
+  
   storeInt(striplen, eeAddr);
-  Serial.println("striplen: ");
-  Serial.println(striplen);
-  // UDPATE: Store LED state for use on restart
-  Serial.println("stripcontrol.effect: ");
-  Serial.println(stripcontrol.effect);
+  Serial.printf("striplen: %d\n", striplen);
+
+  // Store LED state for use on restart
+  Serial.printf("stripcontrol.effect: %d\n", stripcontrol.effect);
   storeInt(stripcontrol.effect, eeAddr);
-  Serial.println("stripcontrol.brightness: ");
-  Serial.println(stripcontrol.brightness);
+  
+  Serial.printf("stripcontrol.brightness: %d\n", stripcontrol.brightness);
   storeInt(stripcontrol.brightness, eeAddr);
-  Serial.println("stripcontrol.varZero: ");
-  Serial.println(stripcontrol.varZero);
+  
+  Serial.printf("stripcontrol.varZero: %d\n", stripcontrol.varZero);
   storeInt(stripcontrol.varZero, eeAddr);
-  Serial.println("stripcontrol.varOne: ");
-  Serial.println(stripcontrol.varOne);
+  
+  Serial.printf("stripcontrol.varOne: %d\n", stripcontrol.varOne);
   storeInt(stripcontrol.varOne, eeAddr);
-  Serial.println("stripcontrol.varTwo: ");
-  Serial.println(stripcontrol.varTwo);
+  
+  Serial.printf("stripcontrol.varTwo: %d\n", stripcontrol.varTwo);
   storeInt(stripcontrol.varTwo, eeAddr);
+
+  for (uint8_t i = 0; i < 5; i++)
+  {
+    Serial.printf("stripcontrol.varWheel[%d]: %.1f\n", i, stripcontrol.varWheel[i]);
+    storeFloat(stripcontrol.varWheel[i], eeAddr);
+  }
+
   // END UPDATE
   EEPROM.commit();
 }
@@ -294,6 +328,10 @@ void settingsLoad()
     stripcontrol.varZero = loadInt(eeAddr);
     stripcontrol.varOne = loadInt(eeAddr);
     stripcontrol.varTwo = loadInt(eeAddr);
+    for (uint8_t i = 0; i < 5; i++)
+    {
+      stripcontrol.varWheel[i] = loadFloat(eeAddr);
+    }
     stripcontrol.changed = true;
   }
   else if(!isValid)

@@ -115,7 +115,7 @@ void setupAnimations(int numAnimations)
     }
 }
 
-RgbColor WheelColor(uint16_t wheelValue) {
+RgbColor WheelColor(float wheelValue) {
    // divide the wheelValue by 360.0f to get a value between 0.0 and 1.0 needed for HslColor
    return HslColor(wheelValue / 360.0f, 1.0f, 0.5f); // this will autoconvert back to RgbColor
 }
@@ -206,13 +206,18 @@ void MoveAnimUpdate(const AnimationParam& param)
     }
 }
 
-void cylonWS2812(int speed, int CylonEyeWheelValue)
+void cylonWS2812(int speed, int brightness, float CylonEyeWheelValue)
 {
-    Serial.println("Setting up Cylon Eye");
-
+    // TODO: Implement Brightness Control
+    setWS2812Strip(0, 0, 0);
     setupAnimations(2);
 
-    if (CylonEyeWheelValue) 
+    if (CylonEyeWheelValue == -1.0f) 
+    {
+        SetRandomSeed();
+        CylonEyeColor = WheelColor((float)random(360));
+    }
+    else if (CylonEyeWheelValue >= 0.0f)
     {
         CylonEyeColor = WheelColor(CylonEyeWheelValue);
     }
@@ -232,6 +237,9 @@ void cylonWS2812(int speed, int CylonEyeWheelValue)
 
 // Rotating Loop with Tail
 const float MaxLightness = 0.4f; // max lightness at the head of the tail (0.5f is full bright)
+int RotateSetDirection = 1;
+int RotateCurrDirection = 1;
+int RotateCounter = 1;
 
 void LoopAnimUpdate(const AnimationParam& param)
 {
@@ -242,8 +250,38 @@ void LoopAnimUpdate(const AnimationParam& param)
         // done, time to restart this position tracking animation/timer
         animations->RestartAnimation(param.index);
 
-        // rotate the complete strip one pixel to the right on every update
-        strip->RotateRight(1);
+        if (RotateSetDirection >= 0 && RotateSetDirection < 3)
+        {
+            // rotate the complete strip one pixel to the right on every update
+            strip->RotateRight(1);
+        }
+        else if (RotateSetDirection < 0)
+        {
+            // rotate the complete strip one pixel to the left on every update
+            strip->RotateLeft(1);
+        }
+        else if (RotateSetDirection >= 3) 
+        {
+            if (RotateCounter > 0 && RotateCounter < RotateSetDirection)
+            {
+                if (RotateCurrDirection == 1) 
+                {
+                    strip->RotateRight(1);
+                    RotateCounter++;
+                }
+                else
+                {
+                    strip->RotateLeft(1);
+                    RotateCounter--;
+                }
+            }
+            else
+            {
+                RotateCurrDirection = RotateCurrDirection * -1;
+                RotateCounter += RotateCurrDirection;
+            }
+        }
+
     }
 }
 
@@ -251,28 +289,44 @@ void DrawTailPixels(int TailLength, float TailColor, int StartPixel)
 {
     // using Hsl as it makes it easy to pick from similiar saturated colors
     float hue;
-    if (TailColor < 0)
+    if (TailColor < 0.0f && TailColor > -3.0f)
     {
         hue = random(360) / 360.0f;
     }
+    else if (TailColor == -3.0f)
+    {
+        hue = TailColor;  // White
+    }
     else
     {
-        hue = TailColor;
+        hue = TailColor / 360.0f;
     } 
     
-    for (uint16_t index = (0 + StartPixel); index < strip->PixelCount() && index <= (StartPixel + TailLength); index++)
+    // Serial.printf("Making a tail of %d, %d long, starting at %d.\n", (int)(hue * 360.0f), TailLength, StartPixel);
+
+    // Handle Colors
+    RgbColor color;
+    for (uint16_t index = 0; (index + StartPixel) < strip->PixelCount() && index <= TailLength; index++)
     {
         float lightness = index * MaxLightness / TailLength;
-        RgbColor color = HslColor(hue, 1.0f, lightness);
-
+        if (hue >= 0.0f) 
+        {
+            color = HslColor(hue, 1.0f, lightness); // Regular Colors
+        }
+        else
+        {
+            color = HslColor(0.0f, 0.0f, lightness); // White
+        }
         int pixelToUpdate = (index + StartPixel) % strip->PixelCount();
-        strip->SetPixelColor(index, colorGamma.Correct(color));
+        strip->SetPixelColor(pixelToUpdate, color);
+        //strip->SetPixelColor(index, colorGamma.Correct(color));
     }
 }
 
-void tailLoopWS2812(int speed, uint16_t TailLength, uint8_t fill, float tailColors[5])
+void tailLoopWS2812(int speed, int brightness, uint16_t TailLength, int FillAndDir, float tailColors[5])
 {
-    Serial.println("Setting up Tail Loop");
+    // TODO: Implement Brightness Control
+    setWS2812Strip(0, 0, 0);
     setupAnimations(1);
     //TODO: Handle brightness
     //TODO: Check tails go to zero
@@ -283,33 +337,40 @@ void tailLoopWS2812(int speed, uint16_t TailLength, uint8_t fill, float tailColo
     {
         TailLength = strip->PixelCount() - 1;
     }
-    else if (TailLength == 0) 
+    else if (TailLength <= 2) 
     {
-        TailLength = 1;
+        TailLength = 2; // Minimum length is 2, 1 pixel on, 1 pixel off.
     }
+
+    //Serial.printf("Using tail length of %d.\n", TailLength);
 
     SetRandomSeed();
 
-    if (fill) 
+    // Find the number of valid colors we were given in tailColors
+    int numColors = 0;
+    for (uint8_t z = 0; z < 5; z++)
     {
-        int numColors;
-        for (uint8_t z = 0; z < 5; z++)
+        if (tailColors[z] != -2.0f) 
         {
-            if (tailColors[z] != -2.0f) 
-            {
-                numColors++;
-            }
-            else
-            {
-                break;
-            }
+            numColors++;
         }
+        else
+        {
+            break;
+        }
+    }
+    if (!numColors) { numColors = 1; } // Error checking, make sure we have at least 1 color
 
-        int numTails = strip->PixelCount() / (numColors * TailLength) + 1;
+    if (FillAndDir > 1 || FillAndDir < -1) 
+    {
+        int numTails = strip->PixelCount() / (numColors * TailLength);
+        numTails = (numTails == 0) ? 1 : numTails;
+
+        // Serial.printf("Creating %d tail(s) for %d color(s) on a strip %d long.\n", numTails, numColors, strip->PixelCount());
 
         for (uint8_t n = 0; n < numTails; n++)
         {
-            for (uint8_t col = 0; col < 5; col++)
+            for (uint8_t col = 0; col < numColors; col++)
             {
                 DrawTailPixels(TailLength, tailColors[col], (n*TailLength*numColors) + (col*TailLength));
             }
@@ -317,11 +378,13 @@ void tailLoopWS2812(int speed, uint16_t TailLength, uint8_t fill, float tailColo
     }
     else
     {
-        for (uint8_t col = 0; col < 5; col++)
+        for (uint8_t col = 0; col < numColors; col++)
         {
             DrawTailPixels(TailLength, tailColors[col], col * TailLength);
         }
     }
+
+    RotateSetDirection = FillAndDir;
 
     // we use the index 0 animation to time how often we rotate all the pixels
     animations->StartAnimation(0, speed, LoopAnimUpdate); 

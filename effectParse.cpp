@@ -1,6 +1,6 @@
 #include "effectParse.h"
 
-#define NUM_PARAM 7
+#define NUM_PARAM 12
 
 WiFiUDP effectListener;
 String effectVariables[NUM_PARAM][2];
@@ -21,7 +21,7 @@ String getAlphaNumString(String &data)
   if(data[0] == '?' || data[0] == '=' || data[0] == '&')
   {
     int i = 0;
-    while(isalnum(data[i+1]))
+    while(isalnum(data[i+1]) || data[i+1]=='-')
     {
       text += data[i+1];
       i++;
@@ -65,45 +65,61 @@ void applyEffectData()
     Serial.println("pins:");
     Serial.printf("set:%d\ngot:%d\n", accessPin, stripcontrol.pincode);
     // parse and store in struct.
-    stripcontrol.effect = effectArg("effect").toInt();
-    stripcontrol.brightness = effectArg("brightness").toInt();
-    stripcontrol.varZero = effectArg("var0").toInt();
-    stripcontrol.varOne = effectArg("var1").toInt();
-    stripcontrol.varTwo = effectArg("var2").toInt();
+    // stripcontrol.effect = effectArg("effect").toInt();
+    // stripcontrol.brightness = effectArg("brightness").toInt();
+    // stripcontrol.varZero = effectArg("var0").toInt();
+    // stripcontrol.varOne = effectArg("var1").toInt();
+    // stripcontrol.varTwo = effectArg("var2").toInt();
     // stripcontrol.changed = true; # Re-used as flag to store new colors
     
     // If `savesetting` works, expose the rest of the contruct and 
     // comment out the 5 lines above to enable only partial URLs to be sent.
     //
-    // if(effectArg("effect") != String(""))  
-    // {
-    //   stripcontrol.effect = effectArg("effect").toInt();
-    // }
-    // if(effectArg("brightness") != String(""))  
-    // {
-    //   stripcontrol.brightness = effectArg("brightness").toInt();
-    // }
-    // if(effectArg("var0") != String(""))  
-    // {
-    //   stripcontrol.varZero = effectArg("var0").toInt();
-    // }
-    // if(effectArg("var1") != String(""))  
-    // {
-    //   stripcontrol.varOne = effectArg("var1").toInt();
-    // }
-    // if(effectArg("var2") != String(""))  
-    // {
-    //   stripcontrol.varTwo = effectArg("var2").toInt();
-    // }
-    // If savesetting flag is passed, write the settings to EEPROM
-    if(effectArg("savesetting") != String(""))  
+    if(effectArg("effect") != String(""))  
     {
-      if(effectArg("savesetting").toInt() == 1)
+      stripcontrol.effect = effectArg("effect").toInt();
+    }
+    if(effectArg("brightness") != String(""))  
+    {
+      stripcontrol.brightness = effectArg("brightness").toInt();
+    }
+    if(effectArg("var0") != String(""))  
+    {
+      stripcontrol.varZero = effectArg("var0").toInt();
+    }
+    if(effectArg("var1") != String(""))  
+    {
+      stripcontrol.varOne = effectArg("var1").toInt();
+    }
+    if(effectArg("var2") != String(""))  
+    {
+      stripcontrol.varTwo = effectArg("var2").toInt();
+    }
+
+    // If savesetting flag is passed, write the settings to EEPROM
+    if(effectArg("savesetting") != String("") && effectArg("savesetting").toInt() == 1)  
+    {
+      stripcontrol.changed = 2;
+    }
+    else 
+    { 
+      stripcontrol.changed = 1; 
+    }
+
+    // Process varWheel Arguements
+    for (uint8_t i = 0; i < 5; i++)
+    {
+      char varNum[4];
+      sprintf(varNum, "var%d", i+3);
+      if(effectArg(varNum) != String(""))
       {
-        stripcontrol.changed = 2;
+        stripcontrol.varWheel[i] = effectArg(varNum).toFloat();
+      }
+      else
+      {
+        stripcontrol.varWheel[i] = -2.0f; // Default value
       }
     }
-    if (stripcontrol.changed != 2) { stripcontrol.changed = 1; }
   }
   debugPrintStripControl();
 }

@@ -34,6 +34,7 @@ typedef struct {
   int varZero;
   int varOne;
   int varTwo;
+  float varWheel[5];
   int changed;
 } stripcontrol_t;
 

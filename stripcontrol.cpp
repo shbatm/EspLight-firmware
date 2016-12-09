@@ -90,11 +90,12 @@ void handleStrips()
     }
     else if(stripcontrol.effect == CYLONEYE)
     {
+        int brightness = stripcontrol.brightness+1;
         if(stripselect == WS2812)
         {
             if (stripcontrol.changed)
             {
-                cylonWS2812(speed, stripcontrol.varTwo); // Only needs to be called the first time after a change
+                cylonWS2812(speed, brightness, stripcontrol.varWheel[0]); // Only needs to be called the first time after a change
             }
             updateWS2812();
         }
@@ -105,12 +106,16 @@ void handleStrips()
     }
     else if(stripcontrol.effect == TAILLOOP)
     {
+        int brightness = stripcontrol.brightness+1;
         if(stripselect == WS2812)
         {
             if (stripcontrol.changed)
             {
-                float tailcolors[5] = {(float)stripcontrol.varTwo, -1.0f, -1.0f, -1.0f, -1.0f};
-                tailLoopWS2812(speed, stripcontrol.varOne, false, tailcolors); // Only needs to be called the first time after a change
+                tailLoopWS2812(speed, 
+                               brightness,
+                               stripcontrol.varOne, 
+                               stripcontrol.varTwo, 
+                               stripcontrol.varWheel); // Only needs to be called the first time after a change
             }
             updateWS2812();
         }
@@ -124,7 +129,7 @@ void handleStrips()
 
 void debugPrintStripControl()
 {
-    char fmtstr[100];
+    char fmtstr[200];
     sprintf(fmtstr, 
         "\nDebug:\n"
         "pincode:     %d\n"
@@ -133,6 +138,11 @@ void debugPrintStripControl()
         "var0:        %d\n"
         "var1:        %d\n"
         "var2:        %d\n"
+        "varWheel[0]: %d\n"
+        "varWheel[1]: %d\n"
+        "varWheel[2]: %d\n"
+        "varWheel[3]: %d\n"
+        "varWheel[4]: %d\n"
         "changed:     %d\n",
         stripcontrol.pincode,
         stripcontrol.effect,
@@ -140,6 +150,11 @@ void debugPrintStripControl()
         stripcontrol.varZero,
         stripcontrol.varOne,
         stripcontrol.varTwo,
+        (int)stripcontrol.varWheel[0],
+        (int)stripcontrol.varWheel[1],
+        (int)stripcontrol.varWheel[2],
+        (int)stripcontrol.varWheel[3],
+        (int)stripcontrol.varWheel[4],
         stripcontrol.changed
         );
     Serial.println(fmtstr);
