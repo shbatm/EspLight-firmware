@@ -144,7 +144,9 @@ AnimEaseFunction moveEase = NeoEase::QuarticInOut;
 // CYLON EYE FEATURE:
 RgbColor CylonEyeColor(HtmlColor(0x7f0000));  // can be changed by passing VarTwo as a Wheel value between 0 and 360.
 uint16_t lastPixel = 0; // track the eye position
+uint16_t nextPixel;
 int8_t moveDir = 1; // track the direction of movement
+uint16_t eyerange = ws2812_striplen;
 
 void FadeAll(uint8_t darkenBy)
 {
@@ -172,14 +174,13 @@ void MoveAnimUpdate(const AnimationParam& param)
     float progress = moveEase(param.progress);
 
     // use the curved progress to calculate the pixel to effect
-    uint16_t nextPixel;
     if (moveDir > 0)
     {
-        nextPixel = progress * ws2812_striplen;
+        nextPixel = progress * eyerange;
     }
     else
     {
-        nextPixel = (1.0f - progress) * ws2812_striplen;
+        nextPixel = (1.0f - progress) * eyerange;
     }
 
     // if progress moves fast enough, we may move more than
@@ -217,10 +218,18 @@ void cylonWS2812(int speed, int brightness, float CylonEyeWheelValue)
         SetRandomSeed();
         CylonEyeColor = WheelColor((float)random(360));
     }
+    else if (CylonEyeWheelValue == -3.0f) {
+        CylonEyeColor = HtmlColor(0xffffff);
+    }
     else if (CylonEyeWheelValue >= 0.0f)
     {
         CylonEyeColor = WheelColor(CylonEyeWheelValue);
     }
+
+    brightness = (brightness < 0) ? 0 : brightness;
+    brightness = (brightness > 100) ? 100 : brightness;
+    float brightnessFactor = (float)(((float)brightness)/100);
+    CylonEyeColor.Darken(255 - (255 * brightnessFactor));
 
     // fade all pixels providing a tail that is longer the faster
     // the pixel moves.
@@ -236,7 +245,7 @@ void cylonWS2812(int speed, int brightness, float CylonEyeWheelValue)
 }
 
 // Rotating Loop with Tail
-const float MaxLightness = 0.4f; // max lightness at the head of the tail (0.5f is full bright)
+float MaxLightness = 0.5f; // max lightness at the head of the tail (0.5f is full bright)
 int RotateSetDirection = 1;
 int RotateCurrDirection = 1;
 int RotateCounter = 1;
@@ -325,12 +334,14 @@ void DrawTailPixels(int TailLength, float TailColor, int StartPixel)
 
 void tailLoopWS2812(int speed, int brightness, uint16_t TailLength, int FillAndDir, float tailColors[5])
 {
-    // TODO: Implement Brightness Control
     setWS2812Strip(0, 0, 0);
     setupAnimations(1);
-    //TODO: Handle brightness
-    //TODO: Check tails go to zero
 
+    brightness = (brightness < 0) ? 0 : brightness;
+    brightness = (brightness > 100) ? 100 : brightness;
+    MaxLightness = (float)(((float)brightness)/100.0f * 0.5f);  // 0.5f is full brightness in HSL scale
+
+    // TODO: Check tails go to zero
 
     // Error checking for valid tail length
     if (TailLength >= strip->PixelCount()) 

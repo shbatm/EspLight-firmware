@@ -90,12 +90,11 @@ void handleStrips()
     }
     else if(stripcontrol.effect == CYLONEYE)
     {
-        int brightness = stripcontrol.brightness+1;
         if(stripselect == WS2812)
         {
             if (stripcontrol.changed)
             {
-                cylonWS2812(speed, brightness, stripcontrol.varWheel[0]); // Only needs to be called the first time after a change
+                cylonWS2812(speed, stripcontrol.brightness, stripcontrol.varWheel[0]); // Only needs to be called the first time after a change
             }
             updateWS2812();
         }
@@ -106,13 +105,12 @@ void handleStrips()
     }
     else if(stripcontrol.effect == TAILLOOP)
     {
-        int brightness = stripcontrol.brightness+1;
         if(stripselect == WS2812)
         {
             if (stripcontrol.changed)
             {
                 tailLoopWS2812(speed, 
-                               brightness,
+                               stripcontrol.brightness,
                                stripcontrol.varOne, 
                                stripcontrol.varTwo, 
                                stripcontrol.varWheel); // Only needs to be called the first time after a change
@@ -121,7 +119,7 @@ void handleStrips()
         }
         else if(stripselect == WS2801)
         {
-            // TODO: Insert Function Calls for WS2801 Cylon Eye Effect
+            // TODO: Insert Function Calls for WS2801 Tail Loop Effect
         }
     }
     stripcontrol.changed = false;
