@@ -1,5 +1,0 @@
-.pioenvs
-.piolibdeps
-.*
-lib
-*.ini
