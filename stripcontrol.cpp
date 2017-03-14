@@ -88,11 +88,58 @@ void handleStrips()
             updateWS2801();
         }
     }
+    else if(stripcontrol.effect == CYLONEYE)
+    {
+        if(stripselect == WS2812)
+        {
+            if (stripcontrol.changed)
+            {
+                cylonWS2812(speed, stripcontrol.brightness, stripcontrol.varWheel[0]); // Only needs to be called the first time after a change
+            }
+            updateWS2812();
+        }
+        else if(stripselect == WS2801)
+        {
+            // TODO: Insert Function Calls for WS2801 Cylon Eye Effect
+        }
+    }
+    else if(stripcontrol.effect == TAILLOOP)
+    {
+        if(stripselect == WS2812)
+        {
+            if (stripcontrol.changed)
+            {
+                tailLoopWS2812(speed, 
+                               stripcontrol.brightness,
+                               stripcontrol.varOne, 
+                               stripcontrol.varTwo, 
+                               stripcontrol.varWheel); // Only needs to be called the first time after a change
+            }
+            updateWS2812();
+        }
+        else if(stripselect == WS2801)
+        {
+            // TODO: Insert Function Calls for WS2801 Tail Loop Effect
+        }
+    }
+    else if(stripcontrol.effect == FLICKER)
+    {
+        if(stripselect == WS2812)
+        {
+            flickerWS2812(speed, stripcontrol.brightness, stripcontrol.varWheel[0]);
+            updateWS2812();
+        }
+        else if(stripselect == WS2801)
+        {
+            // TODO: Insert Function Calls for WS2801 Flicker Effect
+        }
+    }
+    stripcontrol.changed = false;
 }
 
 void debugPrintStripControl()
 {
-    char fmtstr[100];
+    char fmtstr[200];
     sprintf(fmtstr, 
         "\nDebug:\n"
         "pincode:     %d\n"
@@ -101,6 +148,11 @@ void debugPrintStripControl()
         "var0:        %d\n"
         "var1:        %d\n"
         "var2:        %d\n"
+        "varWheel[0]: %d\n"
+        "varWheel[1]: %d\n"
+        "varWheel[2]: %d\n"
+        "varWheel[3]: %d\n"
+        "varWheel[4]: %d\n"
         "changed:     %d\n",
         stripcontrol.pincode,
         stripcontrol.effect,
@@ -108,6 +160,11 @@ void debugPrintStripControl()
         stripcontrol.varZero,
         stripcontrol.varOne,
         stripcontrol.varTwo,
+        (int)stripcontrol.varWheel[0],
+        (int)stripcontrol.varWheel[1],
+        (int)stripcontrol.varWheel[2],
+        (int)stripcontrol.varWheel[3],
+        (int)stripcontrol.varWheel[4],
         stripcontrol.changed
         );
     Serial.println(fmtstr);

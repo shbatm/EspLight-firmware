@@ -13,6 +13,9 @@
 #define RGBCOLORS 0
 #define FADING 1
 #define DIGITALFADING 2
+#define CYLONEYE 3
+#define TAILLOOP 4
+#define FLICKER 5
 
 #define WS2801 0
 #define WS2812 1
@@ -32,6 +35,7 @@ typedef struct {
   int varZero;
   int varOne;
   int varTwo;
+  float varWheel[5];
   int changed;
 } stripcontrol_t;
 
