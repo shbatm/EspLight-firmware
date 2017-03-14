@@ -72,7 +72,7 @@ The format of the string should be:
     * A HUE value can be passed as a `float` type: 0.0-360.0
     * For a random color each time the effect is activated: send `var3=-1`
     * Since this parameter only passes the **H**(ue) of HSL, **S**aturation & **L**uminence are fixed in the software. To use white, you must send: `var3=-3`.
-* VarWheel[1 thru 4] (`var4=` thru `var7=`) are only used to select additional colors for `TAILLOOP` effect.  Up to 4 additional colors may be used and sent using the same rules as VarWheel[0]. The only exception is the default (-2) will be black/off instead of random.
+* VarWheel[1 thru 4]  (`var4=`,`var5=`,`var6=`,`var7=`) are only used to select additional colors for `TAILLOOP` effect.  Up to 4 additional colors may be used and sent using the same rules as VarWheel[0]. The only exception is the default (-2) will be black/off instead of random.
 * The example below would send a "christmas light" effect of 5 colors chasing each other:<br />`?pin=1234&effect=4&var0=250&var1=2&var2=2&var3=0&var4=100&var5=240 &var6=-3&var7=25`
 
 ###Save Settings
