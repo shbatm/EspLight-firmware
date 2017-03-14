@@ -122,6 +122,18 @@ void handleStrips()
             // TODO: Insert Function Calls for WS2801 Tail Loop Effect
         }
     }
+    else if(stripcontrol.effect == FLICKER)
+    {
+        if(stripselect == WS2812)
+        {
+            flickerWS2812(speed, stripcontrol.brightness, stripcontrol.varWheel[0]);
+            updateWS2812();
+        }
+        else if(stripselect == WS2801)
+        {
+            // TODO: Insert Function Calls for WS2801 Flicker Effect
+        }
+    }
     stripcontrol.changed = false;
 }
 

@@ -16,6 +16,30 @@ static int cinterval = 10;
 // variable that holds colors
 static uint8_t *colors;
 
+void SetRandomSeed()
+{
+    uint32_t seed;
+
+    // random works best with a seed that can use 31 bits
+    // analogRead on a unconnected pin tends toward less than four bits
+    seed = analogRead(0);
+    delay(1);
+
+    for (int shifts = 3; shifts < 31; shifts += 3)
+    {
+        seed ^= analogRead(0) << shifts;
+        delay(1);
+    }
+
+    // Serial.println(seed);
+    randomSeed(seed);
+}
+
+RgbColor WheelColor(float wheelValue) {
+   // divide the wheelValue by 360.0f to get a value between 0.0 and 1.0 needed for HslColor
+   return HslColor(wheelValue / 360.0f, 1.0f, 0.5f); // this will autoconvert back to RgbColor
+}
+
 /* setup the neopixel object, and clear the ledstrip. */
 void setupWS2812(uint16_t length, uint8_t pin)
 {
@@ -33,6 +57,7 @@ void setupWS2812(uint16_t length, uint8_t pin)
     strip->Begin();
     setWS2812Strip(0, 0, 0);
     strip->Show();
+    SetRandomSeed();
 }
 
 /* set the ledstrip to a certain (r, g, b) value. */
@@ -96,6 +121,46 @@ void rainbowWS2812(int speed, int brightness)
     }
 }
 
+// Flickering (Fire/Candle) Animation
+void flickerWS2812(int speed, int brightness, float startingColor)
+{
+    ccurrent = millis();
+    if((ccurrent - cprevious) >= cinterval)
+    {
+        cprevious = ccurrent;
+        cinterval = random(100, speed + 101);
+        RgbColor baseColor(HtmlColor(0xf7ca42));
+        if (startingColor == -1.0f) 
+        {
+            baseColor = WheelColor((float)random(360));
+        }
+        else if (startingColor == -3.0f) {
+            baseColor = HtmlColor(0xffffff);
+        }
+        else if (startingColor >= 0.0f)
+        {
+            baseColor = WheelColor(startingColor);
+        }
+
+        brightness = (brightness < 0) ? 0 : brightness;
+        brightness = (brightness > 100) ? 100 : brightness;
+        float brightnessFactor = (float)(((float)brightness)/100);
+        baseColor.Darken(255 - (255 * brightnessFactor));
+
+
+        int i;
+        for(i = 0; i < ws2812_striplen; i++)
+        {
+            int flicker = random(0,150);
+            RgbColor pixelColor = baseColor;
+            pixelColor.Darken(255 - (255 * flicker));
+            strip->SetPixelColor(i, pixelColor);
+        }
+        UsingAnimations = 0;
+    }
+}
+
+
 // ---- ADVANCED NEOPIXELBUS ANIMATIONS SECTION ----
 // Common variables and functions for all animations:
 NeoPixelAnimator *animations = NULL;
@@ -113,30 +178,6 @@ void setupAnimations(int numAnimations)
         delete animations;
         animations = new NeoPixelAnimator(numAnimations);
     }
-}
-
-RgbColor WheelColor(float wheelValue) {
-   // divide the wheelValue by 360.0f to get a value between 0.0 and 1.0 needed for HslColor
-   return HslColor(wheelValue / 360.0f, 1.0f, 0.5f); // this will autoconvert back to RgbColor
-}
-
-void SetRandomSeed()
-{
-    uint32_t seed;
-
-    // random works best with a seed that can use 31 bits
-    // analogRead on a unconnected pin tends toward less than four bits
-    seed = analogRead(0);
-    delay(1);
-
-    for (int shifts = 3; shifts < 31; shifts += 3)
-    {
-        seed ^= analogRead(0) << shifts;
-        delay(1);
-    }
-
-    // Serial.println(seed);
-    randomSeed(seed);
 }
 
 AnimEaseFunction moveEase = NeoEase::QuarticInOut;
@@ -403,7 +444,6 @@ void tailLoopWS2812(int speed, int brightness, uint16_t TailLength, int FillAndD
     // Tell the loop function (updateWS2812) we're using animations now:
     UsingAnimations = 1;
 }
-
 
 /* update the while ledstrip. */
 void updateWS2812()
