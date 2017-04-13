@@ -4,4 +4,6 @@
 #include <Arduino.h>
 #include "fadeColor.h"
 
+extern void sendUdpDebugInfo(String);
+
 #endif

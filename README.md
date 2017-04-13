@@ -9,13 +9,16 @@ This fork is to make some minor updates and tweaks to Duality4Y's original ESPLi
 	* Tail Loop Feature - The simple version rotates a pixel with a tail through the strip and starts back over at the begninning. This feature can be expanded to up to 5 colors chasing each other (assignable or random), tails can be expanded to fill the strip (e.g. similar to traditional 5-color Christmas Lights chasing each other).
 	* Flicker (Fire / Candle) Effect - A flickering light effect similar to a fire or a candle. The default color is flame-colored orange; however, any color can be assigned.
 * Refer to the [API](API.md) for detailed information on the new animations and effect options.
+* Added support for debugging over the network to a UDP client/listener. Refer to the [API:Communication Protocols](API.md#comms) for more detailed information. Useful for remote debugging without a serial cable connected.
+* Fixed OTA Uploads. Refer to the [OTA HowTo](OTA_UPLOAD_HOWTO.md) for more information on how to use. Note: the initial upload must be performed via hardwired connection.
+* Added support for remote switching to setup/Access Point mode, also modified to switch to AP Mode automatically if not connected to WiFi in 20 seconds.
 
 ##To-do:
 * Update the APP to have Save Settings option and new animation controls.
-* Send serial debug information over WiFi so you don't need a cable connected.
 
 ##Known Issues:
-* Using NeoEsp8266Dma800KbpsMethod only supports the RDX0/GPIO3 pin, NeoEsp8266BitBang800KbpsMethod supports any available pin between 0 and 15 but uses only the CPU to send data to the NeoPixels. Due to WiFi interrupts it is not stable when used with WiFi features of the Esp8266.  Plan to rev up the board to use shared RDX & Data pin, work around for now is to break the trace from GPIO14 and jump from the RX header to the Clock header.
+* For ws2812 strips: Using NeoEsp8266Dma800KbpsMethod only supports the RDX0/GPIO3 pin, NeoEsp8266BitBang800KbpsMethod supports any available pin between 0 and 15 but uses only the CPU to send data to the NeoPixels. Due to WiFi interrupts it is not stable when used with WiFi features of the Esp8266.  
+    + **FIX:**New revision of the board to uses a shared RDX & Data pin; when using the original ESPLight PCB board with this firmware: break the trace from GPIO14 and install a jumper from the RX header to the Clock header.
 
 ##Hardware Changes:
 * Tweaked PCB to add mounting holes and move the VCC to 3.3VDC on-board power supply to an off-board Buck Converter to save component costs.  WRT the buck converter: since I only plan to build a few of these, it's cheaper for me to buy some $2.50 DC to DC buck converter from [here](http://www.gearbest.com/development-boards/pp_51010.html) than to buy the eqivalent in parts+shipping from Digikey/Mouser.  The new board uses a 3-pin header (VCC/3.3V/GND) to connect to the buck board with jumper wires.
@@ -58,7 +61,7 @@ $ esptool.py write_flash -ff 80m -fm qio -fs 32m-c1 0x00000 firmware.bin
 
 after uploading you can follow the instructions for first time use.
 
-## requirements for building:
+## <a href="building"></a>Requirements for Building:
 this library: https://github.com/Makuna/NeoPixelBus
 
 and the latest sources from: https://github.com/esp8266/arduino

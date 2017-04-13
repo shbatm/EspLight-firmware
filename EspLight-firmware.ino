@@ -18,9 +18,9 @@
 
 #include "otaupload.h"
 
+#include "effectParse.h"
 #include "stripcontrol.h"
 #include "html.h"
-#include "effectParse.h"
 
 #define AP_BUTTON           0
 #define STATUS_LED_PIN      16
@@ -36,6 +36,8 @@
 #define SERIALDEBUGPRINTING true
 // sets Serial.setDebugOutput()
 #define ENABLESERIALDEBUG   true
+// enable print to a UDP listener.
+bool ENABLEUDPDEBUG = true;
 
 // set initial board name and wifi settings.
 String board_name = "EspLight01";
@@ -45,6 +47,7 @@ String sta_pass = "esplight_password";
 // select an initial mode.
 enum {STA_MODE, AP_MODE};
 int currentMode = STA_MODE;
+bool remoteModeSwitch = false;
 
 // set an initial pincode.
 int accessPin = 1234;
@@ -252,52 +255,62 @@ void settingsStore()
   stripcontrol.varTwo,
   */
   int eeAddr = 0;
-  Serial.print("Storing: ");
+  char buffer[200];
+  sprintf(buffer, "\nStoring\n"
+    "magic word: %s\n"
+    "board name: %s\n"
+    "ssid: %s\n"
+    "pass: %s\n"
+    "accesspin: %d\n"
+    "strip select: %d\n"
+    "striplen: %d\n"
+    "stripcontrol:\n"
+    ".effect: %d\n"
+    ".brightness: %d\n",
+    magicEepromWord.c_str(),
+    board_name.c_str(),
+    sta_ssid.c_str(),
+    sta_pass.c_str(),
+    accessPin,
+    stripselect,
+    stripcontrol.effect,
+    stripcontrol.brightness);
+  sendUdpDebugInfo(buffer);
+  sprintf(buffer,
+    ".varZero: %d\n"
+    ".varOne: %d\n"
+    ".varTwo: %d\n"
+    ".varWheel[0]: %d\n"
+    ".varWheel[1]: %d\n"
+    ".varWheel[2]: %d\n"
+    ".varWheel[3]: %d\n"
+    ".varWheel[4]: %d\n",
+    stripcontrol.varZero,
+    stripcontrol.varOne,
+    stripcontrol.varTwo,
+    (int)(stripcontrol.varWheel[0]*100),
+    (int)(stripcontrol.varWheel[1]*100),
+    (int)(stripcontrol.varWheel[2]*100),
+    (int)(stripcontrol.varWheel[3]*100),
+    (int)(stripcontrol.varWheel[4]*100)
+  );
+  sendUdpDebugInfo(buffer);
 
   storeString(magicEepromWord, eeAddr);
-  Serial.print("magic word: ");
-  Serial.println(magicEepromWord);
-
   storeString(board_name, eeAddr);
-  Serial.print("board name: ");
-  Serial.println(board_name);
-
   storeString(sta_ssid, eeAddr);
-  Serial.print("ssid: ");
-  Serial.println(sta_ssid);
-  
   storeString(sta_pass, eeAddr);
-  Serial.print("pass: ");
-  Serial.println(sta_pass);
-  
   storeInt(accessPin, eeAddr);
-  Serial.printf("accesspin: %d\n", accessPin);
-  
   storeInt(stripselect, eeAddr);
-  Serial.printf("strip select: %d\n", stripselect);
-  
   storeInt(striplen, eeAddr);
-  Serial.printf("striplen: %d\n", striplen);
-
   // Store LED state for use on restart
-  Serial.printf("stripcontrol.effect: %d\n", stripcontrol.effect);
   storeInt(stripcontrol.effect, eeAddr);
-  
-  Serial.printf("stripcontrol.brightness: %d\n", stripcontrol.brightness);
   storeInt(stripcontrol.brightness, eeAddr);
-  
-  Serial.printf("stripcontrol.varZero: %d\n", stripcontrol.varZero);
   storeInt(stripcontrol.varZero, eeAddr);
-  
-  Serial.printf("stripcontrol.varOne: %d\n", stripcontrol.varOne);
   storeInt(stripcontrol.varOne, eeAddr);
-  
-  Serial.printf("stripcontrol.varTwo: %d\n", stripcontrol.varTwo);
   storeInt(stripcontrol.varTwo, eeAddr);
-
   for (uint8_t i = 0; i < 5; i++)
   {
-    Serial.printf("stripcontrol.varWheel[%d]: %.1f\n", i, stripcontrol.varWheel[i]);
     storeFloat(stripcontrol.varWheel[i], eeAddr);
   }
 
@@ -311,9 +324,9 @@ void settingsLoad()
 
   bool isValid = magicStrPresent(eeAddr);
   // check if settings are valid;
-  Serial.print("settings are valid: ");
-  Serial.println(isValid ? "true" : "false");
-
+  char buffer[26];
+  sprintf(buffer, "Settings are valid: %d", (isValid ? "true" : "false"));
+  sendUdpDebugInfo(buffer);
   if(isValid)
   {
     // valid settings found and load them.
@@ -338,26 +351,18 @@ void settingsLoad()
   {
     // no valid settings found.
     // store valid settings.
-    Serial.println("invalid settings found loading defaults.");
+    sendUdpDebugInfo("invalid settings found loading defaults.");
     settingsStore();
   }
 }
 
 void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  // print your WiFi shield's IP address:
+  char buffer[200];
   IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
-
-  // print the received signal strength:
   long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
+  sprintf(buffer, "\nWireless Info:\nSSID: %s\nIP Address: %s\nHostname: %s\nSignal Strength (RSSI): %d dbm\n",
+    WiFi.SSID().c_str(), ip.toString().c_str(), board_name.c_str(), rssi);
+  sendUdpDebugInfo(buffer);
 }
 
 void setupAP()
@@ -392,10 +397,12 @@ void setupSTA(bool silent)
     wifiModeHandling();
     // keep a timeout timer.
     i++;
-    if(i == 20)
+    if(i == 40)
     {
       if(!silent)
-      Serial.println("Unable to connect");
+      Serial.println("Unable to connect, switching to AP_MODE");
+      // If unable to connect to WiFi in 20 seconds (40 * 500ms), switch to AP Mode.
+      setupAP();  
       return;
     }
   }
@@ -409,12 +416,13 @@ void setupSTA(bool silent)
 
 void wifiModeHandling()
 {
-  if(!digitalRead(AP_BUTTON))
+  if(!digitalRead(AP_BUTTON) || remoteModeSwitch)
   {
     // switch modes as needed.
     if(currentMode == STA_MODE)
     {
       Serial.println("mode is now AP_MODE");
+      remoteModeSwitch = false;
       setupAP();
     }
     /* actually never gets here. but does if we allowed it to switch back.*/

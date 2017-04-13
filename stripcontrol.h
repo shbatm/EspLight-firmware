@@ -43,6 +43,8 @@ typedef struct {
 extern stripcontrol_t stripcontrol;
 extern int stripselect;
 extern int striplen;
+extern bool ENABLEUDPDEBUG;
+extern void sendUdpDebugInfo(String);
 
 void setupStrips(int);
 void handleStrips();

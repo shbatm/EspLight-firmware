@@ -9,6 +9,9 @@
 #define GREENPIN 4
 #define BLUEPIN 12
 
+
+extern void sendUdpDebugInfo(String);
+
 // setup pin related things.
 void setupAnalogStrip();
 /*

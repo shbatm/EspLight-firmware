@@ -3,6 +3,9 @@
 #define NUM_PARAM 12
 
 WiFiUDP effectListener;
+IPAddress debugIp;
+uint16_t debugPort;
+bool debugChannelReceived = false;
 String effectVariables[NUM_PARAM][2];
 
 // ?pincode=1234&effect=0&brightness=255&var0=207&var1=255&var2=236[&savesetting=1]
@@ -191,6 +194,24 @@ void handleEffectUpdate()
       {
         findResponse(effectListener);
       }
+      else if (String("Debug") == received)
+      {
+        debugChannelReceived = true;
+        debugIp = effectListener.remoteIP();
+        debugPort = effectListener.remotePort();
+        sendUdpDebugInfo("Debug Info Received. Starting UDP Debug Channel...\n");
+        printWifiStatus();
+      }
+      else if (String("7eYA3Q!IEuhc-AP_MODE") == received)
+      {
+        sendUdpDebugInfo("Received request to switch to AP_MODE; Switching (connection will drop)...\n");
+        remoteModeSwitch = true;
+      }
+      else if (String("7eYA3Q!IEuhc-REBOOT") == received)
+      {
+        sendUdpDebugInfo("Received request to reboot; rebooting now...\n");
+        ESP.restart();
+      }
     }
   }
 }
@@ -209,4 +230,15 @@ void findResponse(WiFiUDP listener)
   Serial.println(listener.remotePort());
   // end creating packet and send.
   listener.endPacket();
+}
+
+void sendUdpDebugInfo(String data)
+{
+  if (ENABLEUDPDEBUG && debugChannelReceived) {
+    // create a packetd to put things in.
+    effectListener.beginPacket(debugIp, debugPort);
+    effectListener.print(data);
+    effectListener.endPacket();
+  }
+  Serial.println(data);
 }

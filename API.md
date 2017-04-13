@@ -46,7 +46,7 @@ The format of the string should be:
 |:-----------:|:--------------:|:-------------:|:-------------:|
 |FADING       |Speed (1)       |Not Used       |Not Used       |
 |DIGITALFADING|Speed (1)       |Not Used       |Not Used       |
-|CYLONEYE     |Speed (2)       |Length<br />0-Full Strip<br />X-# of pixels wide|Centered Around Pixel<br />-1 - Center of Strip<br />X-Center on Pixel #X<br />(ignored if VarOne = 0)|
+|CYLONEYE     |Speed (2)       |Length<br />0-Full Strip<br />X-% of strip wide|Centered Around Pixel<br />-1 - Center of Strip<br />X-Center on Pixel<br />(as % of Strip)<br />(ignored if VarOne = 0)|
 |TAILLOOP     |Speed (3)       |Tail Length<br />(# of Pixels)|Direction & Fill:<br />1 - Right, No Fill<br />2 - Right, Fill Strip<br />-1 - Left, No Fill<br />-2 - Left, Fill Strip<br />>=3 - Fill, Alternate direction after X pixels|
 |FLICKER      |Speed (1)       |Not Used       |Not Used       |
 
@@ -87,7 +87,7 @@ The format of the string should be:
 * Christmas Lights: `?pin=1234&effect=4&var0=250&var1=2&var2=2&var3=0&var4=100&var5=240 &var6=-3&var7=25`
 * Black: `?pin=1234&effect=0&brightness=0&var0=0&var1=0&var2=0`
 
-## Using the API
+## <a href="comms"></a>Communications Protocols -- Using the API
 
 * To send a message in a Linux terminal, run:<br />`printf "?pin=0000&effect=2&brightness=99&var0=200&var1=0&var2=0" | nc -u -q1 esplight-ip 1337`
 * To receive messages from the APP in a Linux terminal, run: `nc -u -l -p 1337`
@@ -98,6 +98,15 @@ The format of the string should be:
     + Timeout: 500ms
     + Mode: Raw Text
     + Body: *your command string* (e.g. `?pin=1234&effect=2&brightness=99&var0=200`)
+* To debug over the network:
+    + In a Linux terminal, run: `printf "Debug" | nc -u esplight-ip 1337`
+    + If working properly, the first response you should receive back is:</br>`Debug Info Received. Starting UDP Debug Channel...`
+    + In the ESP code, some debug lines have already been setup to use the network debugging; however, to send additional information: replace Serial.printf(data) statements with sendUdpDebugInfo(data). This will do a Serial.printf(data) but will also echo the data in a UDP Packet to the client.
+* To switch to Setup / AP Mode over the network:
+    + In a Linux terminal, run: `printf "7eYA3Q!IEuhc-AP_MODE" | nc -q1 -u esplight-ip 1337`
+* To remotely restart the ESPLightX over the network:
+    + In a Linux terminal, run: `printf "7eYA3Q!IEuhc-REBOOT" | nc -q1 -u esplight-ip 1337`
+* *'7eYA3Q!IEuhc' is a randomly generated string used for security against malicious network traffic. Recommend that if you need to protect your ESPLightXs from tampering, you change this code and re-compile or disable the AP_MODE and REBOOT functions in stripcontrol.cpp.*
 
 ## Adding Effects
 

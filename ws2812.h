@@ -6,6 +6,8 @@
 #include "fadeColor.h"
 #include "rainbow.h"
 
+extern void sendUdpDebugInfo(String);
+
 void setupWS2812(uint16_t, uint8_t);
 void setWS2812Strip(int, int, int);
 void fadeWS2812(int, int);

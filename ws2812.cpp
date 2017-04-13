@@ -183,9 +183,10 @@ void setupAnimations(int numAnimations)
 AnimEaseFunction moveEase = NeoEase::QuarticInOut;
 
 // CYLON EYE FEATURE:
-RgbColor CylonEyeColor(HtmlColor(0x7f0000));  // can be changed by passing VarTwo as a Wheel value between 0 and 360.
+RgbColor CylonEyeColor(HtmlColor(0x7f0000));  // can be changed by passing varTwo as a Wheel value between 0 and 360.
 uint16_t lastPixel = 0; // track the eye position
 uint16_t nextPixel;
+uint16_t offsetPixels = 0;
 int8_t moveDir = 1; // track the direction of movement
 uint16_t eyerange = ws2812_striplen;
 
@@ -217,11 +218,11 @@ void MoveAnimUpdate(const AnimationParam& param)
     // use the curved progress to calculate the pixel to effect
     if (moveDir > 0)
     {
-        nextPixel = progress * eyerange;
+        nextPixel = (progress * eyerange) + offsetPixels;
     }
     else
     {
-        nextPixel = (1.0f - progress) * eyerange;
+        nextPixel = ((1.0f - progress) * eyerange) + offsetPixels;
     }
 
     // if progress moves fast enough, we may move more than
@@ -250,7 +251,6 @@ void MoveAnimUpdate(const AnimationParam& param)
 
 void cylonWS2812(int speed, int brightness, float CylonEyeWheelValue)
 {
-    // TODO: Implement Brightness Control
     setWS2812Strip(0, 0, 0);
     setupAnimations(2);
 
@@ -271,6 +271,42 @@ void cylonWS2812(int speed, int brightness, float CylonEyeWheelValue)
     brightness = (brightness > 100) ? 100 : brightness;
     float brightnessFactor = (float)(((float)brightness)/100);
     CylonEyeColor.Darken(255 - (255 * brightnessFactor));
+
+    // Handle % range of strip to use; 0 = Full Strip
+    if (stripcontrol.varOne > 100) {
+        stripcontrol.varOne = 0;
+    } else if (stripcontrol.varOne < 0) {
+        stripcontrol.varOne = 0;
+    }
+    if (stripcontrol.varOne == 0) {
+        eyerange = ws2812_striplen;
+    } 
+    else {
+        eyerange = round((float)ws2812_striplen * ((float)stripcontrol.varOne/100.0f));
+        
+        // Set center of eye based on percentage of strip (varTwo)
+        if (stripcontrol.varTwo == -1) {
+            stripcontrol.varTwo = 50;
+        } else if (stripcontrol.varTwo < -1 ) {
+            stripcontrol.varTwo = 0;
+        } else if (stripcontrol.varTwo > 100) {
+            stripcontrol.varTwo = 100;
+        }
+        float midPoint = (float)ws2812_striplen * ((float)stripcontrol.varTwo/100.0f);
+        float leftEnd = midPoint - ((float)eyerange/2.0f);
+        if (leftEnd <= 1.0f) 
+        { 
+            offsetPixels = 0; 
+        } else { 
+            offsetPixels = round(leftEnd) - 1; 
+        }
+
+        // DEBUG INFO
+        char debug1[150];
+        sprintf(debug1, "\neyerange: %d\nws2812_striplen: %d\nstripcontrol.varTwo: %d\nmidPoint: %d\nleftEnd"
+            ": %d\nlastPixel: %d\n", eyerange, ws2812_striplen, stripcontrol.varTwo, (int)(midPoint*100), (int)(leftEnd*100), offsetPixels);
+        sendUdpDebugInfo(debug1);
+    }
 
     // fade all pixels providing a tail that is longer the faster
     // the pixel moves.

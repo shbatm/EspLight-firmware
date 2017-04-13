@@ -12,8 +12,10 @@
 
 extern String board_name;
 extern int accessPin;
+extern bool remoteModeSwitch;
 
 extern void debugPrintStripControl();
+extern void printWifiStatus();
 
 void printPacketInfo(int);
 
@@ -25,5 +27,6 @@ void parseEffectPacket(String);
 String readPacketContents(WiFiUDP);
 void handleEffectUpdate();
 void findResponse(WiFiUDP);
+void sendUdpDebugInfo(String);
 
 #endif

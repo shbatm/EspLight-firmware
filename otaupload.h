@@ -8,6 +8,7 @@
 
 #define OTAPORT         48266
 
+extern void sendUdpDebugInfo(String);
 void setupOta();
 void handleSketchUpdate();
 

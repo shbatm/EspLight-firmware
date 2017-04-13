@@ -139,7 +139,7 @@ void handleStrips()
 
 void debugPrintStripControl()
 {
-    char fmtstr[200];
+    char fmtstr[250];
     sprintf(fmtstr, 
         "\nDebug:\n"
         "pincode:     %d\n"
@@ -160,12 +160,13 @@ void debugPrintStripControl()
         stripcontrol.varZero,
         stripcontrol.varOne,
         stripcontrol.varTwo,
-        (int)stripcontrol.varWheel[0],
-        (int)stripcontrol.varWheel[1],
-        (int)stripcontrol.varWheel[2],
-        (int)stripcontrol.varWheel[3],
-        (int)stripcontrol.varWheel[4],
+        (int)(stripcontrol.varWheel[0]*100),  // This version of sprintf won't print floats
+        (int)(stripcontrol.varWheel[1]*100),  // Floats multiplied by 100 and converted
+        (int)(stripcontrol.varWheel[2]*100),  // i.e. read printout of "-300" as "-3.00"
+        (int)(stripcontrol.varWheel[3]*100),
+        (int)(stripcontrol.varWheel[4]*100),
         stripcontrol.changed
         );
-    Serial.println(fmtstr);
+    // Serial.println(fmtstr);
+    sendUdpDebugInfo(fmtstr);
 }
